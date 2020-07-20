@@ -1,0 +1,54 @@
+#Fait par: Fabian Tito Arandia Martinez
+#Date de creation: 5 juin 2020
+#Objectif: creer les fichiers txt a partir des sorties de PRSIM afin de les rendre 
+#ingerables par hecressim ou riverware
+
+library(sparklyr)
+library(reshape2)
+library(readr)
+library(stringr)
+options(scipen = 999)
+rm(list=ls())
+#sc <- spark_connect(master = "local")
+setwd('/home/tito/Desktop')
+fichiers<-list.files('/media/tito/TIIGE/PRSIM/0.9995/sims/')
+numeros_r<-c("r1","r2","r3","r4","r5","r6","r7","r8","r9","r10")
+
+#Preallouer la matrice avec les annees
+load("/media/tito/TIIGE/PRSIM/0.9995/sims/stoch_sim_10_outaouais_Kappa_2000_9995_LD.Rdata")
+pre_test<-stoch_sim['Bark Lake'][[1]]$simulation
+
+i=0
+for(fichier in fichiers){
+  try(rm(stoch_sim))
+  
+  load(paste('/media/tito/TIIGE/PRSIM/0.9995/sims/',fichier,sep=""))
+  bvs<-names(stoch_sim)
+  mainDir<-'/media/tito/TIIGE/PRSIM/0.9995/bv_csv_hecressim'
+  for(numero_r in numeros_r){
+    conc_total<-pre_test$YYYY
+    
+    for(bv in bvs){
+      test<-stoch_sim[bv][[1]]$simulation
+      #conc_total<-test$YYYY
+      
+      conc<-test[numero_r]
+      colnames(conc)<-bv
+      conc_total<-cbind(conc_total,conc)
+    }
+    for(year in unique(conc_total$conc_total)){
+      hydros_per_sim_per_year<-conc_total[conc_total$conc_total==year,]
+      i=i+1
+      filename<-paste('//media/tito/TIIGE/PRSIM/0.9995/bv_csv_hecressim/',str_pad(i, 7, pad = "0"),'.csv',sep='')
+      hydros_per_sim_per_year <- hydros_per_sim_per_year[,-1] 
+      write.csv(x = hydros_per_sim_per_year[complete.cases(hydros_per_sim_per_year),],filename,row.names = FALSE,quote = FALSE)
+    }
+  }
+    
+    
+    
+
+      
+      
+    }
+    
