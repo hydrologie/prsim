@@ -1,6 +1,4 @@
-#Fait par: Fabian Tito Arandia Martinez
-#Date: 2020-02-18
-#Objectif: Prendre les intrants hydrologiques et les mettre dans une liste.
+#!/usr/bin/env Rscript
 
 library(PRSim)
 library(tidyverse)
@@ -8,9 +6,8 @@ library(lubridate)
 library(sparklyr)
 library(foreach)
 library(doParallel)
-rm(list=ls())
 setwd("/home/tito/Desktop/PRsim entry")
-
+args = commandArgs(trailingOnly = TRUE)
 tests<-list()
 fichiers<-list.files()
 for(fichier in fichiers){
@@ -61,11 +58,13 @@ save(tests, file = filename2)
 # 
 # stopCluster(cl)
 
-trace(prsim.wave,edit=TRUE)#enlever les set seed.
+#trace(prsim.wave,edit=TRUE)#enlever les set seed.
 
 source('/home/tito/Documents/R coding/PrSim_modifiedLD/PRSimLD.wave.R')
 
-for(i in 1:1000) {
+start_sim_number<-as.numeric(args[1L])
+print(start_sim_number)
+for(i in start_sim_number:(start_sim_number+100)) {
   #require(PRSim)
   stoch_sim<-prsimLD.wave(tests, "Qobs", 10, suppWarn=TRUE)
   names(stoch_sim)<-bvs
