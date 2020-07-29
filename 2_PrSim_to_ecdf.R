@@ -8,6 +8,9 @@ library(sparklyr)
 library(dplyr)
 rm(list=ls())
 
+#repertoire general
+path<-'/media/tito/TIIGE/PRSIM/0.9995/'
+
 #ecdf cunnane
 ecdf_cunnane<-function (x) 
 {
@@ -25,7 +28,7 @@ ecdf_cunnane<-function (x)
 }
 #configuration pour les calculs effectues sur le spark dataframe
 # Initialize configuration with defaults
-setwd('/media/tito/TIIGE/PRSIM/0.9995')
+setwd(path)
 config <- spark_config()
 
 config$`sparklyr.shell.driver-memory` <- "2G"
@@ -35,21 +38,21 @@ config$`spark.yarn.executor.memoryOverhead` <- "512"
 # Connect to local cluster with custom configuration
 sc <- spark_connect(master = "local", config = config)
 
-spec_with_r <- sapply(read.csv("/media/tito/TIIGE/PRSIM/0.9995/bv_csv/Bark Lake/1-Bark Lake-r1.csv", nrows = 10), class)
+spec_with_r <- sapply(read.csv(paste0(path,"bv_csv/Bark Lake/1-Bark Lake-r1.csv"), nrows = 10), class)
 
 quantiles_qinter_bvs<-list()
 #boucle a faire
-bvs<-list.files('/media/tito/TIIGE/PRSIM/0.9995/bv_csv/')
+bvs<-list.files(paste0(path,'bv_csv/'))
 
 for(bv in bvs){
-  testo<-spark_read_csv(sc = sc,path = paste('/media/tito/TIIGE/PRSIM/0.9995/bv_csv/',bv,'/',sep=''),columns=spec_with_r,memory = FALSE)
+  testo<-spark_read_csv(sc = sc,path = paste(path,'bv_csv/',bv,'/',sep=''),columns=spec_with_r,memory = FALSE)
   
   src_tbls(sc)
   #target <- c("summer", "winter")
   res=testo%>%filter(season == 'spring')%>%group_by(YYYY,gen_number,variable)%>%summarize(max=max(value))%>%collect()
   #res=testo%>%filter(season %in% target)%>%group_by(YYYY,gen_number,variable)%>%summarize(max=max(value))%>%collect()
   
-  filename<-paste('/media/tito/TIIGE/PRSIM/0.9995/max_prt_pointes/',bv,'-PRSIM-Kappa.Rdata',sep='')
+  filename<-paste(path,'max_prt_pointes/',bv,'-PRSIM-Kappa.Rdata',sep='')
   save(res, file = filename)
   #testis<-testo%>%arrange(value)%>%collect()%trop de donnees pour lancer
   
@@ -63,7 +66,7 @@ for(bv in bvs){
   
   Fn<- ecdf_cunnane(res$max)
   #prendre les codes pour cunnane
-  quantiles_qinter<-data.frame(quantiles=quantile(Fn, prob = c((1-(1/10000)),(1-(1/2000)),(1-(1/1000)),(1-(1/200)),(1-(1/100)),(1-(1/50)),(1-(1/20)),(1-(1/10))), names = FALSE),row.names=c(10000,2000,1000,200,100,50,20,10))
+  quantiles_qinter<-data.frame(quantiles=quantile(Fn, prob = c((1-(1/10000)),(1-(1/2000)),(1-(1/1000)),(1-(1/200)),(1-(1/100)),(1-(1/50)),(1-(1/20)),(1-(1/10)),(1-(1/2))), names = FALSE),row.names=c(10000,2000,1000,200,100,50,20,10,2))
   quantiles_qinter_bvs[[bv]]<-quantiles_qinter
 }
 
@@ -74,7 +77,7 @@ spark_disconnect(sc)
 
 df <- data.frame(matrix(unlist(quantiles_qinter_bvs), nrow=length(quantiles_qinter_bvs), byrow=T))
 rownames(df)<-names(quantiles_qinter_bvs)
-colnames(df)<-c(10000,2000,1000,200,100,50,20,10)
+colnames(df)<-c(10000,2000,1000,200,100,50,20,10,2)
 write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_printemps_09995.csv')
 
 
@@ -82,7 +85,7 @@ write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_printemps_09995.csv')
 
 #configuration pour les calculs effectues sur le spark dataframe
 # Initialize configuration with defaults
-setwd('/media/tito/TIIGE/PRSIM/0.9995')
+setwd(path)
 config <- spark_config()
 
 config$`sparklyr.shell.driver-memory` <- "2G"
@@ -92,21 +95,21 @@ config$`spark.yarn.executor.memoryOverhead` <- "512"
 # Connect to local cluster with custom configuration
 sc <- spark_connect(master = "local", config = config)
 
-spec_with_r <- sapply(read.csv("/media/tito/TIIGE/PRSIM/0.9995/bv_csv/Bark Lake/1-Bark Lake-r1.csv", nrows = 10), class)
+spec_with_r <- sapply(read.csv(path,"bv_csv/Bark Lake/1-Bark Lake-r1.csv", nrows = 10), class)
 
 quantiles_qinter_bvs<-list()
 #boucle a faire
-bvs<-list.files('/media/tito/TIIGE/PRSIM/0.9993/bv_csv/')
+bvs<-list.files(paste0(path,'bv_csv/'))
 
 for(bv in bvs){
-  testo<-spark_read_csv(sc = sc,path = paste('/media/tito/TIIGE/PRSIM/0.9995/bv_csv/',bv,'/',sep=''),columns=spec_with_r,memory = FALSE)
+  testo<-spark_read_csv(sc = sc,path = paste(path,'bv_csv/',bv,'/',sep=''),columns=spec_with_r,memory = FALSE)
   
   src_tbls(sc)
   target <- c("summer", "winter")
   #res=testo%>%filter(season == 'spring')%>%group_by(YYYY,gen_number,variable)%>%summarize(max=max(value))%>%collect()
   res=testo%>%filter(season %in% target)%>%group_by(YYYY,gen_number,variable)%>%summarize(max=max(value))%>%collect()
   
-  filename<-paste('/media/tito/TIIGE/PRSIM/0.9995/max_ete_pointes/',bv,'-PRSIM-Kappa.Rdata',sep='')
+  filename<-paste(path,'max_ete_pointes/',bv,'-PRSIM-Kappa.Rdata',sep='')
   save(res, file = filename)
   #testis<-testo%>%arrange(value)%>%collect()%trop de donnees pour lancer
   
@@ -120,7 +123,7 @@ for(bv in bvs){
   
   Fn<- ecdf_cunnane(res$max)
   #prendre les codes pour cunnane
-  quantiles_qinter<-data.frame(quantiles=quantile(Fn, prob = c((1-(1/10000)),(1-(1/2000)),(1-(1/1000)),(1-(1/200)),(1-(1/100)),(1-(1/50)),(1-(1/20)),(1-(1/10))), names = FALSE),row.names=c(10000,2000,1000,200,100,50,20,10))
+  quantiles_qinter<-data.frame(quantiles=quantile(Fn, prob = c((1-(1/10000)),(1-(1/2000)),(1-(1/1000)),(1-(1/200)),(1-(1/100)),(1-(1/50)),(1-(1/20)),(1-(1/10)),(1-(1/2))), names = FALSE),row.names=c(10000,2000,1000,200,100,50,20,10,2))
   quantiles_qinter_bvs[[bv]]<-quantiles_qinter
 }
 
@@ -131,5 +134,5 @@ spark_disconnect(sc)
 
 df <- data.frame(matrix(unlist(quantiles_qinter_bvs), nrow=length(quantiles_qinter_bvs), byrow=T))
 rownames(df)<-names(quantiles_qinter_bvs)
-colnames(df)<-c(10000,2000,1000,200,100,50,20,10)
+colnames(df)<-c(10000,2000,1000,200,100,50,20,10,2)
 write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_ete_09995.csv')
