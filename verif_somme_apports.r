@@ -4,6 +4,7 @@
 
 library(tidyverse)
 library(readxl)
+library(reshape2)
 rm(list=ls())
 
 #historique
@@ -16,19 +17,52 @@ for(bv in names(tests)){
 }
 
 qobs_df<-do.call(cbind,qobs_total)#55 annees de donnees
-carillon_sum_obs<-rowSums(qobs_df)
+carillon_sum_obs<-rowSums(qobs_df)#cas pour carillon
 q_obs_df_final<-as.data.frame(cbind(tests[[bv]]$YYYY,tests[[bv]]$MM,tests[[bv]]$DD,carillon_sum_obs))
 colnames(q_obs_df_final)<-c('YYYY','MM','DD','qobs')
+
 
 
 qobs_mean_per_day = q_obs_df_final %>% group_by(MM,DD) %>% summarise(AvgQ=mean(qobs))
 qobs_max_per_day = q_obs_df_final %>% group_by(MM,DD) %>% summarise(MaxQ=max(qobs))
 qobs_min_per_day = q_obs_df_final %>% group_by(MM,DD) %>% summarise(MinQ=min(qobs))
 
-#ggplot des statistiques sommaires des observations
-plot(qobs_mean_per_day$AvgQ,type='l',ylim=c(0,20000))                
-points(qobs_max_per_day$MaxQ,type='l')
-points(qobs_min_per_day$MinQ,type='l')
+#graphiques des hydrogrammes observes chacun des bassins versants
+bvs_names<-colnames(qobs_df)
+qobs_df_outaouais<-as.data.frame(YYYY=cbind(tests[[bv]]$YYYY,MM=tests[[bv]]$MM,DD=tests[[bv]]$DD,qobs_df))
+colnames(qobs_df_outaouais)[1]<-'YYYY'
+colnames(qobs_df_outaouais)[2]<-'MM'
+colnames(qobs_df_outaouais)[3]<-'DD'
+
+#organiser les sorties par bassin versant avant de rentrer dans le calcul des statistiques sommaires
+qobs_df_outaouais_melt<-melt(data = qobs_df_outaouais, id.vars = c("YYYY", "MM","DD"))
+
+
+qobs_mean_per_day = qobs_df_outaouais_melt %>% group_by(MM,DD,variable) %>% summarise(AvgQ=mean(value))
+qobs_min_per_day = qobs_df_outaouais_melt %>% group_by(MM,DD,variable) %>% summarise(MinQ=min(value))
+qobs_max_per_day = qobs_df_outaouais_melt %>% group_by(MM,DD,variable) %>% summarise(MaxQ=max(value))
+
+
+
+#exemple pour un bassin en particulier
+bvs_names<-unique(qobs_mean_per_day$variable)
+#bvs_names[] <- lapply(bvs_names, as.character)
+
+for(bv_name in bvs_names){
+  qobs_mean_per_bassin_per_day<-qobs_mean_per_day[qobs_mean_per_day$variable==bv_name,]
+  qobs_min_per_bassin_per_day<-qobs_min_per_day[qobs_mean_per_day$variable==bv_name,]
+  qobs_max_per_bassin_per_day<-qobs_max_per_day[qobs_mean_per_day$variable==bv_name,]
+  
+  
+  #ggplot des statistiques sommaires des observations
+  lim_max<-max(qobs_max_per_bassin_per_day$MaxQ)
+  plot(qobs_mean_per_bassin_per_day$AvgQ,type='l',ylim=c(0,lim_max),main = bv_name,xlab='Jours juliens',ylab='Q')                
+  points(qobs_max_per_bassin_per_day$MaxQ,type='l')
+  points(qobs_min_per_bassin_per_day$MinQ,type='l')
+  grid()
+
+  
+}
 
 #aller lire les fichiers dans le repertoire pour hecressim
 mainDir<-'/media/tito/TIIGE/PRSIM/0.9995/bv_csv_hecressim'
