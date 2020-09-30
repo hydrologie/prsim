@@ -25,7 +25,8 @@ ecdf_cunnane<-function (x)
 }
 #configuration pour les calculs effectues sur le spark dataframe
 # Initialize configuration with defaults
-setwd('/media/tito/TIIGE/PRSIM/0.9995')
+path<-'/media/tito/TIIGE/PRSIM/0.9995/'
+setwd(path)
 config <- spark_config()
 
 config$`sparklyr.shell.driver-memory` <- "2G"
@@ -35,21 +36,21 @@ config$`spark.yarn.executor.memoryOverhead` <- "512"
 # Connect to local cluster with custom configuration
 sc <- spark_connect(master = "local", config = config)
 
-spec_with_r <- sapply(read.csv("/media/tito/TIIGE/PRSIM/0.9995/bv_csv_volume/Bark Lake/1-Bark Lake-r1-volume_prt_max_annuel.csv", nrows = 10), class)
+spec_with_r <- sapply(read.csv(paste0(path,"bv_csv_volume/Bark Lake/1-Bark Lake-r1-volume_prt_max_annuel.csv"), nrows = 10), class)
 
 quantiles_qinter_bvs<-list()
 #boucle a faire
 bvs<-list.files('/media/tito/TIIGE/PRSIM/0.9995/bv_csv_volume/')
 
 for(bv in bvs){
-  testo<-spark_read_csv(sc = sc,path = paste('/media/tito/TIIGE/PRSIM/0.9995/bv_csv_volume/',bv,'/',sep=''),columns=spec_with_r,memory = FALSE)
+  testo<-spark_read_csv(sc = sc,path = paste(path,'bv_csv_volume/',bv,'/',sep=''),columns=spec_with_r,memory = FALSE)
   
   src_tbls(sc)
   #target <- c("summer", "winter")
   
   res=testo%>%collect()
   
-  filename<-paste('/media/tito/TIIGE/PRSIM/0.9995/max_prt_volumes/',bv,'-PRSIM-Kappa.Rdata',sep='')
+  filename<-paste(path,'max_prt_volumes/',bv,'-PRSIM-Kappa.Rdata',sep='')
   save(res, file = filename)
   #testis<-testo%>%arrange(value)%>%collect()%trop de donnees pour lancer
   

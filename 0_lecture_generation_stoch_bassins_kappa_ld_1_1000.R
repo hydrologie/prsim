@@ -43,7 +43,7 @@ for(fichier in fichiers){
 }
 
 bvs<-names(tests)
-filename2<-paste("/home/tito/Desktop/obs_outaouais.Rdata")
+filename2<-paste("/media/tito/TIIGE/PRSIM/obs_outaouais.Rdata")
 save(tests, file = filename2)
 
 # cores<-detectCores()
@@ -74,7 +74,7 @@ for(i in start_sim_number:(start_sim_number+100)) {
   stoch_sim<-prsimLD.wave(tests, "Qobs", 10, suppWarn=TRUE)
   names(stoch_sim)<-bvs
   
-  filename<-paste("/media/tito/TIIGE/PRSIM/0.9995/sims_final/stoch_sim_10_outaouais_Kappa_",as.character(i),"_9995_LD.Rdata",sep='')
+  filename<-paste("/media/tito/TIIGE/PRSIM/0.9997/sims_final/stoch_sim_10_outaouais_Kappa_",as.character(i),"_9997_LD.Rdata",sep='')
   
   save(stoch_sim, file = filename)
   

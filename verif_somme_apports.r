@@ -64,6 +64,9 @@ for(bv_name in bvs_names){
   
 }
 
+
+##########################################################
+#Preparation des fichiers pour spark
 #aller lire les fichiers dans le repertoire pour hecressim
 mainDir<-'/media/tito/TIIGE/PRSIM/0.9995/bv_csv_hecressim'
 setwd(mainDir)
@@ -108,11 +111,14 @@ spec_with_r <- sapply(read.csv('/media/tito/TIIGE/PRSIM/0.9995/carillon_sum/cari
 testo<-spark_read_csv(sc = sc,path = paste0(mainDir2,subDir),columns=spec_with_r,memory = FALSE)
 src_tbls(sc)
 testo$ops$vars
-testo %>% filter(carillon_sum > 2000)
+#testo %>% filter(carillon_sum > 2000)
 
 df_mean_per_julian_day = testo %>% group_by(julian_day) %>% summarise(AvgQ=mean(carillon_sum))%>% collect()
 df_max_per_julian_day = testo %>% group_by(julian_day) %>% summarise(MaxQ=max(carillon_sum))%>% collect()
 df_min_per_julian_day = testo %>% group_by(julian_day) %>% summarise(MinQ=min(carillon_sum))%>% collect()
+
+df_max_per_julian_day = testo %>% summarise(MaxQ=max(carillon_sum))%>% collect()
+
 
 #mettre en ordre les statistiques sommaires de l'hydrogramme
 df_mean_per_julian_day_ordered<-df_mean_per_julian_day[order(df_mean_per_julian_day$julian_day),]
@@ -162,34 +168,94 @@ quantiles_qinter_2<-data.frame(quantiles=quantile(ecdf_max_year, prob = c((1-(1/
 
 spark_disconnect(sc)
 
-# 
-# df <- do.call("cbind", total)
-# 
-# mean_hydro<-rowMeans(df)
-# max_hydro<- apply(df, 1, max) 
-# min_hydro<- apply(df, 1, min) 
-# 
-# #ecdf pointes printanières
-# 
-# #ecdf cunnane
-# ecdf_cunnane<-function (x) 
-# {
-#   x <- sort(x)
-#   n <- length(x)
-#   if (n < 1) 
-#     stop("'x' must have 1 or more non-missing values")
-#   vals <- unique(x)
-#   rval <- approxfun(vals, cumsum(tabulate(match(x, vals))-0.4)/(n+0.2), 
-#                     method = "constant", yleft = 0, yright = 1, f = 0, ties = "ordered")
-#   class(rval) <- c("ecdf", "stepfun", class(rval))
-#   assign("nobs", n, envir = environment(rval))
-#   attr(rval, "call") <- sys.call()
-#   rval
-# }
-# colMax <- function(data) sapply(data, max, na.rm = TRUE)
-# #res=df%>%summarize(max=max(df,na.rm = TRUE)) %>%collect()
-# 
-# df_max_col<-colMax(df)
-# Fn<- ecdf_cunnane(df_max_col)
-# 
-# quantile(Fn, prob=(1-(1/10000)))
+################################################################################################
+#Preparation des fichiers pour spark
+#aller lire les fichiers dans le repertoire pour hecressim
+
+#lecture des csv des hydrogrammes aux bassins versants
+#strategie: 1) avoir les quantiles de l'hydrogramme final 2) calculer les quantiles de pointes
+
+library(sparklyr)
+library(dplyr)
+library(tidyr)
+
+config <- spark_config()
+
+config$`sparklyr.shell.driver-memory` <- "2G"
+config$`sparklyr.shell.executor-memory` <- "2G"
+config$`spark.yarn.executor.memoryOverhead` <- "512"
+
+# Connect to local cluster with custom configuration
+sc <- spark_connect(master = "local", config = config)
+
+spec_with_r <- sapply(read.csv('/media/tito/TIIGE/PRSIM/0.9995/bv_csv_hecressim_summary//0000001.csv', nrows = 1), class)
+
+mainDir2<-'/media/tito/TIIGE/PRSIM/0.9995/'
+
+subDir<-'bv_csv_hecressim_summary'
+testo<-spark_read_csv(sc = sc,path = paste0(mainDir2,subDir),columns=spec_with_r,memory = FALSE)#specifier par colonne
+src_tbls(sc)
+testo$ops$vars
+#testo %>% filter(Cabonga > 400)%>%collect()
+
+
+
+
+df_mean_per_julian_day = testo %>% group_by(julian_day,variable) %>% summarise(AvgQ=mean(value))%>% collect()
+save(df_mean_per_julian_day, file = "df_mean_per_julian_day_outaouais.RData")
+
+df_max_per_julian_day = testo %>% group_by(julian_day) %>% summarise(MaxQ=max(value))%>% collect()
+save(df_max_per_julian_day, file = "df_max_per_julian_day_outaouais.RData")
+
+df_min_per_julian_day = testo %>% group_by(julian_day) %>% summarise(MinQ=min(value))%>% collect()
+save(df_min_per_julian_day, file = "df_min_per_julian_day_outaouais.RData")
+
+#mettre en ordre les statistiques sommaires de l'hydrogramme
+df_mean_per_julian_day_ordered<-df_mean_per_julian_day[order(df_mean_per_julian_day$julian_day),]
+
+df_max_per_julian_day_ordered<-df_max_per_julian_day[order(df_max_per_julian_day$julian_day),]
+df_min_per_julian_day_ordered<-df_min_per_julian_day[order(df_min_per_julian_day$julian_day),]
+
+#ggplot des statistiques sommaires des simulations PRSIM
+plot(df_max_per_julian_day_ordered,type='l',ylim=c(0,20000))                
+points(df_mean_per_julian_day_ordered,type='l')
+points(df_min_per_julian_day_ordered,type='l')
+#ajout des informations de debit observes
+points(qobs_mean_per_day$AvgQ,type='l',col='red')                
+points(qobs_max_per_day$MaxQ,type='l',col='red')
+points(qobs_min_per_day$MinQ,type='l',col='red')
+#sdf_pivot(testo, sim_number ~ carillon_sum)
+
+#calcul de la pointe a carillon
+#ajouter les saisons
+#res=testo%>%filter(season %in% target)%>%group_by(sim_number)%>%summarize(max=max(carillon_sum))%>%collect()
+
+#maximun par annee
+res=testo%>%group_by(sim_number)%>%summarize(max=max(carillon_sum))%>%collect()
+#ecdf cunnane
+ecdf_cunnane<-function (x) 
+{
+  x <- sort(x)
+  n <- length(x)
+  if (n < 1) 
+    stop("'x' must have 1 or more non-missing values")
+  vals <- unique(x)
+  rval <- approxfun(vals, cumsum(tabulate(match(x, vals))-0.4)/(n+0.2), 
+                    method = "constant", yleft = 0, yright = 1, f = 0, ties = "ordered")
+  class(rval) <- c("ecdf", "stepfun", class(rval))
+  assign("nobs", n, envir = environment(rval))
+  attr(rval, "call") <- sys.call()
+  rval
+}
+ecdf_max_year<-ecdf_cunnane(res$max)
+plot(ecdf_max_year)
+Fn<- ecdf_cunnane(res$max)
+#prendre les codes pour cunnane
+quantiles_qinter<-data.frame(quantiles=quantile(Fn, prob = c((1-(1/10000)),(1-(1/2000)),(1-(1/1000)),(1-(1/200)),(1-(1/100)),(1-(1/50)),(1-(1/20)),(1-(1/10)),(1-(1/2))), names = FALSE),row.names=c(10000,2000,1000,200,100,50,20,10,2))
+
+quantiles_qinter_2<-data.frame(quantiles=quantile(ecdf_max_year, prob = c((1-(1/10000)),(1-(1/2000)),(1-(1/1000)),(1-(1/200)),(1-(1/100)),(1-(1/50)),(1-(1/20)),(1-(1/10)),(1-(1/2))), names = FALSE),row.names=c(10000,2000,1000,200,100,50,20,10,2))
+
+#
+
+spark_disconnect(sc)
+

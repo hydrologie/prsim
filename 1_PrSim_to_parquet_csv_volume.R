@@ -13,17 +13,18 @@ library(roll)
 rm(list=ls())
 #sc <- spark_connect(master = "local")
 setwd('/home/tito/Desktop')
-fichiers<-list.files('/media/tito/TIIGE/PRSIM/0.9995/sims/')
+fichiers<-list.files('/media/tito/TIIGE/PRSIM/0.9995/sims_final//')
 numeros_r<-c("r1","r2","r3","r4","r5","r6","r7","r8","r9","r10")
 
+path<-'/media/tito/TIIGE/PRSIM/0.9995/'
 i=0
 for(fichier in fichiers){
   try(rm(stoch_sim))
   i=i+1
-  load(paste('/media/tito/TIIGE/PRSIM/0.9995/sims/',fichier,sep=""))
+  load(paste(path,'sims_final/',fichier,sep=""))
   numero_gen<-as.character(i)
   bvs<-names(stoch_sim)
-  mainDir<-'/media/tito/TIIGE/PRSIM/0.9995/bv_csv_volume/'
+  mainDir<-paste0(path,'/bv_csv_volume/')
   for(bv in bvs){
     test<-stoch_sim[bv][[1]]$simulation
     
