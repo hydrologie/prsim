@@ -1,21 +1,33 @@
 #Fait par: Fabian Tito Arandia Martinez
 #Date de creation: 17 mars 2020
 #Objectif: creer les fichiers txt a partir des sorties de PRSIM afin de les rendre 
-#ingerables par Spark (calcul probabilites) et Modsim (laminage)
+#ingerables par Spark (calcul probabilites) et Modsim (laminage). Deux alternatives pour gagner en vitesse:sparkly r ou les librairies de parallelisation de R
 
-library(sparklyr)
+
 library(reshape2)
 library(readr)
+library(parallel)
+library(MASS)
+library(foreach)
+library(doParallel)
 
 rm(list=ls())
+
+numCores <- detectCores()
+numCores
+
+registerDoParallel(numCores) 
+
 #sc <- spark_connect(master = "local")
-path<-'/media/tito/TIIGE/PRSIM/0.9995/'
+path<-'/media/tito/TIIGE/PRSIM/0.9997/'
 setwd(path)
 fichiers<-list.files(paste0(path,'sims_final/'))
 numeros_r<-c("r1","r2","r3","r4","r5","r6","r7","r8","r9","r10")
 
+n_fichiers<-length(fichiers)
 i=0
-for(fichier in fichiers){
+foreach (n=1:n_fichiers) %do% {
+  fichier<-fichiers[n]
   try(rm(stoch_sim))
   i=i+1
   load(paste(path,'sims_final/',fichier,sep=""))
