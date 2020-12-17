@@ -25,13 +25,14 @@ ecdf_cunnane<-function (x)
 }
 #configuration pour les calculs effectues sur le spark dataframe
 # Initialize configuration with defaults
-path<-'/media/tito/TIIGE/PRSIM/0.9995/'
+path<-'/media/tito/TIIGE/PRSIM/0.9997/'
 setwd(path)
 config <- spark_config()
 
 config$`sparklyr.shell.driver-memory` <- "2G"
 config$`sparklyr.shell.executor-memory` <- "2G"
 config$`spark.yarn.executor.memoryOverhead` <- "512"
+config$`sparklyr.cores.local` <- 9
 
 # Connect to local cluster with custom configuration
 sc <- spark_connect(master = "local", config = config)
@@ -40,7 +41,7 @@ spec_with_r <- sapply(read.csv(paste0(path,"bv_csv_volume/Bark Lake/1-Bark Lake-
 
 quantiles_qinter_bvs<-list()
 #boucle a faire
-bvs<-list.files('/media/tito/TIIGE/PRSIM/0.9995/bv_csv_volume/')
+bvs<-list.files('/media/tito/TIIGE/PRSIM/0.9997/bv_csv_volume/')
 
 for(bv in bvs){
   testo<-spark_read_csv(sc = sc,path = paste(path,'bv_csv_volume/',bv,'/',sep=''),columns=spec_with_r,memory = FALSE)
@@ -76,5 +77,5 @@ spark_disconnect(sc)
 df <- data.frame(matrix(unlist(quantiles_qinter_bvs), nrow=length(quantiles_qinter_bvs), byrow=T))
 rownames(df)<-names(quantiles_qinter_bvs)
 colnames(df)<-c(10000,2000,1000,200,100,50,20,10)
-write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_printemps_volume_09995.csv')
+write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_printemps_volume_09997.csv')
 

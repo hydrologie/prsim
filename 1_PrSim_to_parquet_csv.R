@@ -19,7 +19,8 @@ numCores
 registerDoParallel(numCores) 
 
 #sc <- spark_connect(master = "local")
-path<-'/media/tito/TIIGE/PRSIM/0.9997/'
+
+path<-'/media/tito/TIIGE/PRSIM/0.9997_harm_mb/'
 setwd(path)
 fichiers<-list.files(paste0(path,'sims_final/'))
 numeros_r<-c("r1","r2","r3","r4","r5","r6","r7","r8","r9","r10")
@@ -31,6 +32,7 @@ foreach (n=1:n_fichiers) %do% {
   try(rm(stoch_sim))
   i=i+1
   load(paste(path,'sims_final/',fichier,sep=""))
+  stoch_sim<-out
   numero_gen<-as.character(i)
   bvs<-names(stoch_sim)
   mainDir<-paste0(path,'bv_csv/')

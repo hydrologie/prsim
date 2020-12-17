@@ -6,7 +6,7 @@ library(lubridate)
 library(sparklyr)
 library(foreach)
 library(doParallel)
-setwd("/media/tito/TIIGE/PRSIM/ApportPRSIM/ApportHarmonise/")
+setwd("/media/tito/TIIGE/PRSIM/ApportPRSIM/ApportHarmonise_BassinSup/")
 args = commandArgs(trailingOnly = TRUE)
 tests<-list()
 fichiers<-list.files()
@@ -15,7 +15,7 @@ for(fichier in fichiers){
   nom<-strsplit(fichier,'_')[[1]][4]
   
   date_debut<-strsplit(fichier,'_')[[1]][3]
-  date_debut_sim<-"19600101"
+  date_debut_sim<-"19700101" #adapte pour les bassins supplementaires
   date_fin<-substr(strsplit(fichier,'_')[[1]][5],1,8)
   
  
@@ -44,12 +44,12 @@ for(fichier in fichiers){
 }
 
 bvs<-names(tests)
-filename2<-paste("/media/tito/TIIGE/PRSIM/obs_outaouais_harm.Rdata")
+filename2<-paste("/media/tito/TIIGE/PRSIM/obs_outaouais_harm_bassins_sup.Rdata")
 save(tests, file = filename2)
-
-# cores<-detectCores()
-# cl<-makeCluster(cores[1]-8)
-# registerDoParallel(cl)
+library(doParallel)
+ cores<-detectCores()
+ cl<-makeCluster(cores[1]-8)
+ registerDoParallel(cl)
 # 
 # foreach(i = 1:10) %dopar% {
 #   require(PRSim)

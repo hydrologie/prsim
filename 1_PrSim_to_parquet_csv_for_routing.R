@@ -11,20 +11,20 @@ options(scipen = 999)
 rm(list=ls())
 #sc <- spark_connect(master = "local")
 setwd('/home/tito/Desktop')
-fichiers<-list.files('/media/tito/TIIGE/PRSIM/0.9997/sims_final/')
+fichiers<-list.files('/media/tito/TIIGE/PRSIM/0.9997_harm/sims_final/')
 numeros_r<-c("r1","r2","r3","r4","r5","r6","r7","r8","r9","r10")
 
 #Preallouer la matrice avec les annees
-load("/media/tito/TIIGE/PRSIM/0.9997/sims_final/stoch_sim_10_outaouais_Kappa_102_9997_LD.Rdata")
+load("/media/tito/TIIGE/PRSIM/0.9997_harm/sims_final/stoch_sim_10_outaouais_Kappa_102_9997_LD.Rdata")
 pre_test<-stoch_sim['Bark Lake'][[1]]$simulation
 
 i=0
 for(fichier in fichiers){
   try(rm(stoch_sim))
   
-  load(paste('/media/tito/TIIGE/PRSIM/0.9997/sims_final/',fichier,sep=""))
+  load(paste('/media/tito/TIIGE/PRSIM/0.9997_harm/sims_final/',fichier,sep=""))
   bvs<-names(stoch_sim)
-  mainDir<-'/media/tito/TIIGE/PRSIM/0.9997/bv_csv_hecressim'
+  mainDir<-'/media/tito/TIIGE/PRSIM/0.9997_harm/bv_csv_hecressim'
   for(numero_r in numeros_r){
     conc_total<-pre_test$YYYY
     
@@ -39,7 +39,7 @@ for(fichier in fichiers){
     for(year in unique(conc_total$conc_total)){
       hydros_per_sim_per_year<-conc_total[conc_total$conc_total==year,]
       i=i+1
-      filename<-paste('//media/tito/TIIGE/PRSIM/0.9997/bv_csv_hecressim/',str_pad(i, 7, pad = "0"),'.csv',sep='')
+      filename<-paste('//media/tito/TIIGE/PRSIM/0.9997_harm/bv_csv_hecressim/',str_pad(i, 7, pad = "0"),'.csv',sep='')
       hydros_per_sim_per_year <- hydros_per_sim_per_year[,-1] 
       write.csv(x = hydros_per_sim_per_year[complete.cases(hydros_per_sim_per_year),],filename,row.names = FALSE,quote = FALSE)
     }

@@ -9,7 +9,7 @@ library(dplyr)
 rm(list=ls())
 
 #repertoire general
-path<-'/media/tito/TIIGE/PRSIM/0.9995/'
+path<-'/media/tito/TIIGE/PRSIM/0.9997_harm_mb/'
 
 #ecdf cunnane
 ecdf_cunnane<-function (x) 
@@ -34,6 +34,7 @@ config <- spark_config()
 config$`sparklyr.shell.driver-memory` <- "2G"
 config$`sparklyr.shell.executor-memory` <- "2G"
 config$`spark.yarn.executor.memoryOverhead` <- "512"
+config$`sparklyr.cores.local` <- 9
 
 # Connect to local cluster with custom configuration
 sc <- spark_connect(master = "local", config = config)
@@ -57,9 +58,9 @@ for(bv in bvs){
   #testis<-testo%>%arrange(value)%>%collect()%trop de donnees pour lancer
   
   #il ny a que des 1950 pour 36500 entrees. Alors quil faut 36500 * 67
-  png(paste(bv,'_09995.png',sep=''))
-  plot(ecdf(res$max),xlab = 'Q (m3/s)',main=bv)
-  dev.off()
+  #png(paste(bv,'_09997.png',sep=''))
+  #plot(ecdf(res$max),xlab = 'Q (m3/s)',main=bv)
+  #dev.off()
 
   
   #calcul des quantiles
@@ -78,7 +79,7 @@ spark_disconnect(sc)
 df <- data.frame(matrix(unlist(quantiles_qinter_bvs), nrow=length(quantiles_qinter_bvs), byrow=T))
 rownames(df)<-names(quantiles_qinter_bvs)
 colnames(df)<-c(10000,2000,1000,200,100,50,20,10,2)
-write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_printemps_09995.csv')
+write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_printemps_09997.csv')
 
 
 ####ete-automne####
@@ -95,7 +96,7 @@ config$`spark.yarn.executor.memoryOverhead` <- "512"
 # Connect to local cluster with custom configuration
 sc <- spark_connect(master = "local", config = config)
 
-spec_with_r <- sapply(read.csv(path,"bv_csv/Bark Lake/1-Bark Lake-r1.csv", nrows = 10), class)
+spec_with_r <- sapply(read.csv(paste0(path,"bv_csv/Bark Lake/1-Bark Lake-r1.csv"), nrows = 10), class)
 
 quantiles_qinter_bvs<-list()
 #boucle a faire
@@ -114,9 +115,9 @@ for(bv in bvs){
   #testis<-testo%>%arrange(value)%>%collect()%trop de donnees pour lancer
   
   #il ny a que des 1950 pour 36500 entrees. Alors quil faut 36500 * 67
-  png(paste(bv,'_09995_ete.png',sep=''))
-  plot(ecdf(res$max),xlab = 'Q (m3/s)',main=bv)
-  dev.off()
+  #png(paste(bv,'_09995_ete.png',sep=''))
+  #plot(ecdf(res$max),xlab = 'Q (m3/s)',main=bv)
+  #dev.off()
   
   
   #calcul des quantiles
@@ -135,4 +136,4 @@ spark_disconnect(sc)
 df <- data.frame(matrix(unlist(quantiles_qinter_bvs), nrow=length(quantiles_qinter_bvs), byrow=T))
 rownames(df)<-names(quantiles_qinter_bvs)
 colnames(df)<-c(10000,2000,1000,200,100,50,20,10,2)
-write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_ete_09995.csv')
+write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_ete_09997.csv')
