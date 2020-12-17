@@ -1,8 +1,11 @@
+source('prsim_wave_marg.R')
+source('visualisation_boxplot_by_prsim_rdata.R')
 
-start_sim_number=1
+generateur_prsim <- function(start_number,final_number,dir_main,dir_analysis){
+#start_sim_number=1
 #generateur de simulations prsim
 for(i in start_sim_number:(start_sim_number)) {
-  out <- prsim.wave.marg(data=runoff_multi_sites, number_sim=1, 
+  out <- prsim.wave.marg(data=runoff_multi_sites, number_sim=10, 
                          marginal_list=liste_des_distributions_choisies,
                          n_par_list=nbre_de_parametres_par_distribution)#probleme avec goftest ks_test ks.test
   
@@ -16,4 +19,4 @@ for(i in start_sim_number:(start_sim_number)) {
   #ajouter visualisation
   source(visualisation_boxplot_by_prsim_rdata)
   visualisation_boxplot(dir_analysis) 
-}
+}}

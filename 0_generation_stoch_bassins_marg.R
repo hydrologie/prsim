@@ -146,23 +146,6 @@ for (l in 1:length(data)){
 runoff_multi_sites<- data
 
 #chargement de la fonction de Manuela
-source('prsim_wave_marg.R')
+source('generateur_prsim_mar.R')
 
-# Change for the number of SIMS
-start_sim_number=1
-for(i in start_sim_number:(start_sim_number)) {
-  out <- prsim.wave.marg(data=runoff_multi_sites, number_sim=1, 
-                        marginal_list=liste_des_distributions_choisies,
-                        n_par_list=nbre_de_parametres_par_distribution)#probleme avec goftest ks_test ks.test
-
-  ### Save the simulations
-  names(out)<-names(runoff_multi_sites)
-   dir.create(paste0(dir_main, 'sims_final/'), showWarnings = FALSE) #stops warnings if folder already exists
-   filename<-paste(dir_main, "sims_final/stoch_sim_10_outaouais_",as.character(i),"_MB.Rdata",sep='')
-  # 
-  # save(out, file = filename)
-  
-#ajouter visualisation
-  source(visualisation_boxplot_by_prsim_rdata)
-  visualisation_boxplot(dir_analysis) 
-}
+generateur_prsim(start_number,10,dir_main,dir_analysis)
