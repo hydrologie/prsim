@@ -62,7 +62,7 @@ rPIII <- function(n, theta)  rpearsonIII(n, theta[1], theta[2], theta[3])
 PIII_fit <- function( xdat, ...)   fitdist(xdat, "PIII", method = "mse", start=list(shape=1, location=1, scale=1))$estimate
 
 
-source('prsim_wave_marg.R')
+
 
 
 ### application example
@@ -150,6 +150,9 @@ for (l in 1:length(data)){
 }
 runoff_multi_sites<- data
 
+#chargement de la fonction de Manuela
+source('prsim_wave_marg.R')
+
 # Change for the number of SIMS
 start_sim_number=1
 for(i in start_sim_number:(start_sim_number)) {
@@ -165,4 +168,6 @@ for(i in start_sim_number:(start_sim_number)) {
   # save(out, file = filename)
   
 #ajouter visualisation
+  source(visualisation_boxplot_by_prsim_rdata)
+  visualisation_boxplot(dir_analysis) 
 }
