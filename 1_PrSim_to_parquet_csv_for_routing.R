@@ -3,6 +3,8 @@
 #Objectif: creer les fichiers txt a partir des sorties de PRSIM afin de les rendre 
 #ingerables par hecressim ou riverware
 
+prsim_rdata_to_hecressim_csv<-function(path){
+  
 library(sparklyr)
 library(reshape2)
 library(readr)
@@ -50,5 +52,5 @@ for(fichier in fichiers){
 
       
       
-    }
+    }}
     
