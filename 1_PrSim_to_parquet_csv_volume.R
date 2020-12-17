@@ -3,6 +3,9 @@
 #Objectif: creer les fichiers txt a partir des sorties de PRSIM afin de les rendre 
 #ingerables par Spark (calcul probabilites) et Modsim (laminage)
 
+prsim_rdata_to_csv_volume<-function(path){
+  
+
 library(sparklyr)
 library(reshape2)
 library(readr)
@@ -11,12 +14,12 @@ library(dplyr)
 library(roll)
 
 rm(list=ls())
-#sc <- spark_connect(master = "local")
-setwd('/home/tito/Desktop')
-fichiers<-list.files('/media/tito/TIIGE/PRSIM/0.9995/sims_final//')
-numeros_r<-c("r1","r2","r3","r4","r5","r6","r7","r8","r9","r10")
 
 path<-'/media/tito/TIIGE/PRSIM/0.9995/'
+
+fichiers<-list.files(paste0(path,'sims_final//'))
+numeros_r<-c("r1","r2","r3","r4","r5","r6","r7","r8","r9","r10")
+
 i=0
 for(fichier in fichiers){
   try(rm(stoch_sim))
@@ -55,9 +58,6 @@ for(fichier in fichiers){
       
       res=test2%>%filter(season %in% 'spring')%>%group_by(YYYY,gen_number,variable)%>%mutate(vol =value*(1e-6*60*60*24) )%>%
         mutate(roll_sum = roll_sum(vol, 70))  %>%summarize(max=max(roll_sum,na.rm = TRUE)) %>%collect()
-      #%>% mutate(rollapply_sum =rollapplyr(vol, 70, sum,fill=NA) )
-      #filename<-paste('/home/tito/Desktop/',bv,'-PRSIM-Kappa.Rdata',sep='')
-      #final<-dcast(test2,formula = julian_day+season+gen_number+sim_number~YYYY)
       filename<-paste(mainDir,'/',bv,'/',numero_gen,'-',bv,'-',numero_r,'-volume_prt_max_annuel.csv',sep='')
       write_csv(res,filename)
       
@@ -71,4 +71,4 @@ for(fichier in fichiers){
     
   }
   
-}
+}}
