@@ -3,7 +3,7 @@
 #Objectif: lire les fichiers parquet ou csv dans spark et calculer la fonction de 
 #densite cumulative empirique par bassin versant
 
-
+prsim_csv_volume_to_ecdf_csv_volume<-function(path){
 library(sparklyr)
 library(dplyr)
 rm(list=ls())
@@ -53,14 +53,7 @@ for(bv in bvs){
   
   filename<-paste(path,'max_prt_volumes/',bv,'-PRSIM-Kappa.Rdata',sep='')
   save(res, file = filename)
-  #testis<-testo%>%arrange(value)%>%collect()%trop de donnees pour lancer
-  
-  #il ny a que des 1950 pour 36500 entrees. Alors quil faut 36500 * 67
-  #png(paste(bv,'_09993.png',sep=''))
-  #plot(ecdf(testo$value),xlab = 'Q (m3/s)',main=bv)
-  #dev.off()
 
-  
   #calcul des quantiles
   
   Fn<- ecdf_cunnane(res$max)
@@ -79,3 +72,4 @@ rownames(df)<-names(quantiles_qinter_bvs)
 colnames(df)<-c(10000,2000,1000,200,100,50,20,10)
 write.csv(df,'quantiles_prt_outaouais_prelim_prsim_kappaLD_printemps_volume_09997.csv')
 
+}

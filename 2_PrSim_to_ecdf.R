@@ -3,7 +3,7 @@
 #Objectif: lire les fichiers parquet ou csv dans spark et calculer la fonction de 
 #densite cumulative empirique par bassin versant
 
-prsim_rdata_to_csv_volume<-function(path){
+prsim_csv_to_ecdf_csv<-function(path){
 library(sparklyr)
 library(dplyr)
 rm(list=ls())
