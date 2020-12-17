@@ -1,4 +1,4 @@
-
+prsim.wave.marg <- function(dir_analysis){
 ### visualize simulations for all test stations
 ### store stochastically simulated time series
 setwd(dir_analysis)
@@ -26,3 +26,5 @@ for(l in 1:length(data)){
   boxplot((sim$Qobs),(sim$r1),col=c('black','grey'),names=c('Obs','Sim'))
 }
 dev.off()
+
+}
