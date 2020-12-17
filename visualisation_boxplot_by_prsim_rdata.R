@@ -1,4 +1,4 @@
-prsim.wave.marg <- function(dir_analysis){
+visualisation_boxplot <- function(dir_analysis){
 ### visualize simulations for all test stations
 ### store stochastically simulated time series
 setwd(dir_analysis)
