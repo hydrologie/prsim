@@ -13,9 +13,6 @@ library(PearsonDS)
 
 
 ### define directories
-#dir_main <- "/home/tito/Documents/Travail de MB/" ### path needs to be pointing to the hydro_Quebec folder I sent you.
-#dir_main<-"H:\\Projets_communs\\2020\\Outaouais PRsim\\01_Intrants\\AnalyseSpatial60Series\\"
-
 dir_main<-"H:\\Projets_communs\\2020\\Outaouais PRSIM\\02_Calculs\\Resultats\\"
 dir_analysis <- paste(dir_main,"results",sep='')
 
@@ -67,15 +64,13 @@ PIII_fit <- function( xdat, ...)   fitdist(xdat, "PIII", method = "mse", start=l
 
 ### application example
 ### simulate using four different distributions
-#filename<-paste("/media/tito/TIIGE/PRSIM/obs_outaouais_harm_bassins_sup.Rdata")
 filename<-paste(dir_main, "obs_outaouais_harm.Rdata", sep='')
 load(filename)
 runoff_multi_sites<-tests
 
 
-# start_sim_number<-as.numeric(args[1L])
-# print(start_sim_number)
-# 
+start_sim_number<-as.numeric(args[1L])
+
 # liste_des_distributions_choisies<-list('LNORM','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa','kappa')
 # nbre_de_parametres_par_distribution<-list(2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4)
 
@@ -162,8 +157,8 @@ for(i in start_sim_number:(start_sim_number)) {
 
   ### Save the simulations
   names(out)<-names(runoff_multi_sites)
-  # dir.create(paste0(dir_main, 'sims_final/'), showWarnings = FALSE) #stops warnings if folder already exists
-  # filename<-paste(dir_main, "sims_final/stoch_sim_10_outaouais_Kappa_",as.character(i),"_9997_MB.Rdata",sep='')
+   dir.create(paste0(dir_main, 'sims_final/'), showWarnings = FALSE) #stops warnings if folder already exists
+   filename<-paste(dir_main, "sims_final/stoch_sim_10_outaouais_",as.character(i),"_MB.Rdata",sep='')
   # 
   # save(out, file = filename)
   
