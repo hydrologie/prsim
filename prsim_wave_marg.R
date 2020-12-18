@@ -111,7 +111,7 @@ prsim.wave.marg <- function(data, station_id="Qobs", number_sim=1, win_h_length=
     ### determine octave
     octave <- logb(scale.range, 2)
     ### determine wavelet scales
-    scale <- ifelse1(n_wave > 1, 2^c(octave[1] + seq(0, n_wave -
+    scale <- ifelse(n_wave > 1, 2^c(octave[1] + seq(0, n_wave -
                                                        2) * diff(octave)/(floor(n_wave) - 1), octave[2]), scale.range[1])
     scale <- unique(round(scale/sampling.interval) * sampling.interval)
     
