@@ -4,7 +4,8 @@
 library(tidyverse)
 library(lubridate)
 
-dir_csv<-"/media/tito/TIIGE/PRSIM/ApportPRSIM/ApportHarmonise_BassinSup/"
+path<-'/media/tito/TIIGE/PRSIM/ApportPRSIM/'
+dir_csv<-paste0(path,"ApportHarmonise_BassinSup/")
 setwd(dir_csv)
 
 tests<-list()
@@ -43,5 +44,6 @@ for(fichier in fichiers){
 }
 
 bvs<-names(tests)
-filename2<-paste("/media/tito/TIIGE/PRSIM/obs_outaouais_harm_bassins_sup.Rdata")
+
+filename2<-paste0(path,"obs_outaouais_harm_bassins_sup.Rdata")
 save(tests, file = filename2)
