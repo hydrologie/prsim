@@ -6,16 +6,27 @@
 prsim_rdata_to_csv_volume<-function(path){
   
 
-library(sparklyr)
+
 library(reshape2)
 library(readr)
 library(zoo)
 library(dplyr)
 library(roll)
+library(parallel)
+library(MASS)
+library(foreach)
+library(doParallel)
+  
+rm(list=ls())
+  
+numCores <- detectCores()
+numCores
+  
+registerDoParallel(numCores) 
 
 rm(list=ls())
 
-path<-'/media/tito/TIIGE/PRSIM/0.9995/'
+#path<-'/media/tito/TIIGE/PRSIM/0.9995/'
 
 fichiers<-list.files(paste0(path,'sims_final//'))
 numeros_r<-c("r1","r2","r3","r4","r5","r6","r7","r8","r9","r10")
