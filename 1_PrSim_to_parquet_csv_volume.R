@@ -31,8 +31,10 @@ rm(list=ls())
 fichiers<-list.files(paste0(path,'sims_final//'))
 numeros_r<-c("r1","r2","r3","r4","r5","r6","r7","r8","r9","r10")
 
+n_fichiers<-length(fichiers)
 i=0
-for(fichier in fichiers){
+foreach(n=1:n_fichiers)%do%{
+  fichier<-fichiers[n]
   try(rm(stoch_sim))
   i=i+1
   load(paste(path,'sims_final/',fichier,sep=""))
