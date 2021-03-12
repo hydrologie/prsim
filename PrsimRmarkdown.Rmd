@@ -1,0 +1,131 @@
+---
+title: "PRSIM: Verification of summary statistics - Part II: Visualization"
+output:
+  
+  html_document:
+  mathjax: cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js  
+    
+    
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+```{r}
+load('H:/Projets_communs/2020/Outaouais PRsim/01_Intrants/Example Rdata pour Leslie/stoch_sim_10_outaouais_Kappa_1_9997_LD.Rdata')
+dirsim<-"H:/Projets_communs/2020/Outaouais PRsim/02_Calculs/Resultats/results/prsim_stats_rdata/"
+```
+
+```{r,message=FALSE,echo=FALSE,warning=FALSE}
+library(plotly)
+library(readr)
+library(tidyverse)
+library(xlsx)
+library(kableExtra)
+i=0
+Bassins=c(
+"Bark Lake",                    "Baskatong",                    "Cabonga",                     
+ "Carillon et Hull" ,            "Chelsea",                      "Chenaux et Noire",           
+ "Chute-des-Chats" ,             "Des Joachims",                 "Dozois",                      
+"High Falls" ,                  "Kamaniskeg",                   "Kiamika" ,                    
+"Kipawa" ,                      "Lac des Quinze",               "Lac du poisson blanc",       
+"Lac Temiscamingue a Angliers", "Lac Victoria et lac Granet",   "Lady Evelyn" ,                
+"Lower Notch et Indian Chute",  "Madawaska-Arnprior",           "Maniwaki" ,                   
+"Masson" ,                      "Mistinikon"  ,                 "Mitchinamecus" ,              
+"Mont-Laurier",                 "Mountain Chute",               "Otto Holden",                 
+"Paugan" ,                      "Rabbit Lake",                  "Rapide-2",                    
+"Rapide-7" ,                    "Riviere Blanche" ,             "Riviere Bonnechere",          
+"Riviere Coulonge",             "Riviere Dumoine" ,             "Riviere Kinojevis" ,          
+ "Riviere Mattawa"  ,            "Riviere Mississippi",          "Riviere Petawawa" ,           
+"Riviere Petite Nation" ,       "Riviere Rideau" ,              "Riviere Rouge" ,              
+"Riviere South Nation")   
+
+#LOOP ON ALL The BASSIN
+#for(bassin in Bassins){
+print_fig<-function(i) {
+  #cat('## bassin no', i, '\n')  
+  #i=i+1
+  bassin<- Bassins[i]
+  cmd<-paste0("stoch_sim[", i, "]$`", bassin, "`$simulation")
+  #print(bassin)
+  bsk<-eval(parse(text=cmd))
+  #observation
+  df_obs_max<-bsk%>% group_by(MM,DD)%>%summarise(MaxQ=max(Qobs,na.rm = TRUE))
+  df_obs_min<-bsk%>% group_by(MM,DD)%>%summarise(MinQ=min(Qobs,na.rm = TRUE))
+  df_obs_mean<-bsk%>% group_by(MM,DD)%>%summarise(AvgQ=mean(Qobs,na.rm = TRUE))
+ # Simulation
+ load(paste0(dirsim, bassin, '_stats.Rdata'))
+ simdata<-final_prsim_angliers
+ #Tracer le graphique
+ x <- seq(as.Date("2001/1/1"), as.Date("2001/12/31"), by = "day")
+ random_y <- simdata$MaxQ[1:365]
+ data <- data.frame(x, random_y)
+ trace1<-simdata$MaxQ[1:365]
+ trace2<-simdata$AvgQ[1:365]
+ trace3<-df_obs_mean$AvgQ
+ trace4<-df_obs_max$MaxQ
+ trace5<-df_obs_min$MinQ
+ 
+ 
+ fig <- plot_ly(data, x = ~x, y = ~random_y, name = 'QSimMax',type = 'scatter', mode = 'lines',line = list(color = 'transparent'),showlegend = TRUE)
+ fig <- fig %>% add_trace(y = ~trace2, name = 'QSimAvg', mode = 'lines', type = 'scatter', fill = 'tonexty',  fillcolor='rgba(0,100,80,0.2)', line = list(color = 'transparent'),showlegend = FALSE) 
+
+ fig <- fig %>% add_trace(y = ~trace1, name = 'QSimMax', mode = 'lines',line = list(color='rgb(0,100,80)'),type = 'scatter', showlegend = FALSE)
+ fig <- fig %>% add_trace(y = ~trace3, name = 'Qavg_obs', mode = 'lines',line = list(color='rgb(255,0,0)'),type = 'scatter') 
+ fig <- fig %>% add_trace(y = ~trace4, name = 'Qmax_obs', mode = 'lines',line = list(color='rgb(255,0,0)'),type = 'scatter') 
+ fig <- fig %>% add_trace(y = ~trace5, name = 'Qmin_obs', mode = 'lines',line = list(color='rgb(255,0,0)'),type = 'scatter') 
+ titre = paste0("Average, High and Low PRSIM at ", bassin)
+ fig <- fig %>% layout(title = titre,
+                       paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
+                       xaxis = list(title = "Days",
+                                    gridcolor = 'rgb(255,255,255)',
+                                    showgrid = TRUE,
+                                    showline = FALSE,
+                                    showticklabels = TRUE,
+                                    tickcolor = 'rgb(127,127,127)',
+                                    ticks = 'outside',
+                                    zeroline = FALSE),
+                       yaxis = list(title = "Streamflow (cms)",
+                                    gridcolor = 'rgb(255,255,255)',
+                                    showgrid = TRUE,
+                                    showline = FALSE,
+                                    showticklabels = TRUE,
+                                    tickcolor = 'rgb(127,127,127)',
+                                    ticks = 'outside',
+                                 zeroline = FALSE))
+ 
+ #cat('\n') 
+ #print("<P style='page-break-before: always'>")  
+ fig
+ 
+}
+
+```
+
+```{r,message=FALSE,echo=FALSE,warning=FALSE,results='asis'}
+library(plotly)
+library(readr)
+library(tidyverse)
+library(xlsx)
+library(kableExtra)
+
+l <- htmltools::tagList()
+for (i in 1:43) {
+  l[[i]] <- print_fig(i)
+}
+
+l
+```
+
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
