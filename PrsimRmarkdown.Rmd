@@ -1,15 +1,15 @@
 ---
-title: "PRSIM: Verification of summary statistics - Part II: Visualization"
+title: "Visualisation"
+author: "TIto-Leslie"
+date: "2/25/2021"
 output:
-  
-  html_document:
-  mathjax: cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js  
-    
-    
-  html_notebook: default
-  pdf_document: default
   word_document: default
+  html_document: default
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
 
@@ -17,6 +17,7 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 ```{r}
 load('H:/Projets_communs/2020/Outaouais PRsim/01_Intrants/Example Rdata pour Leslie/stoch_sim_10_outaouais_Kappa_1_9997_LD.Rdata')
 dirsim<-"H:/Projets_communs/2020/Outaouais PRsim/02_Calculs/Resultats/results/prsim_stats_rdata/"
+dir_analysis<-"H:/Projets_communs/2020/Outaouais PRsim/02_Calculs/Resultats/results/"
 ```
 
 ```{r,message=FALSE,echo=FALSE,warning=FALSE}
@@ -103,21 +104,88 @@ print_fig<-function(i) {
  
 }
 
+print_ggplot<-function(i) {
+  #cat('## bassin no', i, '\n')  
+  #i=i+1
+  bassin<- Bassins[i]
+  cmd<-paste0("stoch_sim[", i, "]$`", bassin, "`$simulation")
+  #print(bassin)
+  bsk<-eval(parse(text=cmd))
+  #observation
+  df_obs_max<-bsk%>% group_by(MM,DD)%>%summarise(MaxQ=max(Qobs,na.rm = TRUE))
+  df_obs_min<-bsk%>% group_by(MM,DD)%>%summarise(MinQ=min(Qobs,na.rm = TRUE))
+  df_obs_mean<-bsk%>% group_by(MM,DD)%>%summarise(AvgQ=mean(Qobs,na.rm = TRUE))
+  # Simulation
+  load(paste0(dirsim, bassin, '_stats.Rdata'))
+  simdata<-final_prsim_angliers
+  #Tracer le graphique
+  x <- seq(as.Date("2001/1/1"), as.Date("2001/12/31"), by = "day")
+  random_y <- simdata$MaxQ[1:365]
+  datasim <- data.frame(x=x, y=random_y, simMax=simdata$MaxQ[1:365], simAvg=simdata$AvgQ[1:365], obsAvg=df_obs_mean$AvgQ,
+                        obsMax=df_obs_max$MaxQ, obsMin=df_obs_min$MinQ)
+  
+  #Drawing plot
+  fig1<-ggplot(datasim,aes(x=x,y=y, colour="yellow")) +
+  geom_ribbon(aes(ymin = simAvg, ymax = simMax, fill = "SimMax"), alpha = 0.30) +
+  scale_fill_manual(values = c("orange", "red")) +
+  geom_line(aes(x=x, y=obsMax, colour="red"), size = 1) +
+  geom_line(aes(x=x, y=obsMin, colour="blue"), size = 1) +
+  geom_line(aes(x=x, y=obsAvg, colour="green"), size = 1) +
+  
+  scale_color_discrete(name = "Apports Observés", labels = c("Max", "Min", "Moy", "SimMax")) +
+  ggtitle(paste0("Comparaison de PRSIM et observation min max et moy \n  pour le bassin ", bassin))  +
+  xlab("Date (mois/année)") + ylab(expression("Debit (m"^3*"/s") )
+  
+  
+
+  
+  fig1
+  
+}
+
+
 ```
 
 ```{r,message=FALSE,echo=FALSE,warning=FALSE,results='asis'}
-library(plotly)
-library(readr)
-library(tidyverse)
-library(xlsx)
-library(kableExtra)
+# library(htmltools)
+# 
+# l <- htmltools::tagList()
+# for (i in 1:3) {
+#   
+#   tags$div(
+#     l[[i]] <- print_fig(i),
+#     tags$br(),
+#     "I want  a page break"
+#   )
+#  tags$div(
+#   "Some text followed by a break", 
+#   tags$br(),
+#   "Some text following a break"
+# ) 
+#   
+# }
+# 
+# l
+```
 
-l <- htmltools::tagList()
+```{r,message=FALSE,echo=FALSE,warning=FALSE,results='asis'}
+#PRINT GRAPHS IN PDF DOCUMENT
+l <- list()
 for (i in 1:43) {
-  l[[i]] <- print_fig(i)
+    l[[i]] <- print_ggplot(i)
 }
+setwd(dir_analysis)
+library(gridExtra)
+pdf("plotsprim.pdf", onefile = TRUE)
+for (i in seq(length(l))) {
+  do.call("grid.arrange", l[i])  
+}
+dev.off()
 
-l
+
+print(l)
+
+
 ```
 
 
